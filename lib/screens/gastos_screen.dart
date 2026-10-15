@@ -8,6 +8,7 @@ import '../controllers/places_controller.dart' show EstadoCarga;
 import '../models/gasto.dart';
 import '../services/api_exception.dart';
 import 'pantalla_con_fallo.dart';
+import '../theme/app_theme.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
@@ -103,10 +104,11 @@ class GastosScreen extends GetView<GastosController> {
                   ),
                 ],
               ),
+            _buildFiltroCategorias(),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: controller.cargarGastos,
-                child: _buildLista(context, controller.gastos),
+                child: _buildLista(context, controller.gastosFiltrados),
               ),
             ),
           ],
@@ -115,7 +117,41 @@ class GastosScreen extends GetView<GastosController> {
     );
   }
 
+  /// Fila horizontal de chips con «Todas» y cada categoría presente en los
+  /// gastos actuales. Al tocar una categoría se filtra la lista; «Todas» los
+  /// muestra todos.
+  Widget _buildFiltroCategorias() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          for (final cat in controller.categoriasPresentes)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: ChoiceChip(
+                label: Text(cat),
+                selected: controller.categoriaSeleccionada.value == cat,
+                onSelected: (selected) {
+                  controller.seleccionarCategoria(selected ? cat : 'Todas');
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLista(BuildContext context, List<Gasto> gastos) {
+    if (gastos.isEmpty) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 80),
+          Center(child: Text('No hay gastos en esta categoría')),
+        ],
+      );
+    }
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: gastos.length,

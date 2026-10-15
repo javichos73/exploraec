@@ -40,5 +40,5 @@ Los dos deben terminar sin errores. Si fallan, corrige el código; no desactives
 
 <!-- Paso 6 de la práctica: escribe aquí dos reglas propias para ESTE proyecto. -->
 
-- (regla 1)
-- (regla 2)
+Regla 1 (código didáctico): Comenta brevemente las decisiones de diseño o funciones clave para entender el flujo, evitando código críptico o abstracciones innecesarias.   
+Regla 2: Antes de crear un widget nuevo, revisar si ya existe uno similar en lib/widgets/
