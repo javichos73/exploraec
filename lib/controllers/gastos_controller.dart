@@ -31,6 +31,30 @@ class GastosController extends GetxController {
   final RxBool desdeCache = false.obs;
   String get ultimaSincronizacion => _repository.ultimaSincronizacion;
 
+  /// Categoría seleccionada en el filtro ('Todas' por defecto).
+  final RxString categoriaSeleccionada = 'Todas'.obs;
+
+  /// Lista de opciones para el filtro: 'Todas' primero, seguida de cada
+  /// categoría única que aparezca en los gastos actuales (ordenadas).
+  List<String> get categoriasPresentes {
+    final categoriasEnGastos = gastos.map((g) => g.categoria).toSet().toList()..sort();
+    return ['Todas', ...categoriasEnGastos];
+  }
+
+  /// Gastos a mostrar en la pantalla según el filtro seleccionado.
+  /// Si está seleccionada 'Todas' o la categoría ya no existe, muestra todos.
+  List<Gasto> get gastosFiltrados {
+    if (categoriaSeleccionada.value == 'Todas' || !categoriasPresentes.contains(categoriaSeleccionada.value)) {
+      return gastos;
+    }
+    return gastos.where((g) => g.categoria == categoriaSeleccionada.value).toList();
+  }
+
+  /// Cambia la categoría activa del filtro.
+  void seleccionarCategoria(String categoria) {
+    categoriaSeleccionada.value = categoria;
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -74,6 +98,10 @@ class GastosController extends GetxController {
     gastos.value = lista;
     totalEnServidor.value = lista.length;
     desdeCache.value = cache;
+    // Si la categoría seleccionada ya no tiene gastos asociados, vuelve a «Todas».
+    if (!categoriasPresentes.contains(categoriaSeleccionada.value)) {
+      categoriaSeleccionada.value = 'Todas';
+    }
   }
 
   Future<void> cargarCategorias() async {
@@ -126,6 +154,7 @@ class GastosController extends GetxController {
     await _repository.vaciar();
     gastos.clear();
     categorias.clear();
+    categoriaSeleccionada.value = 'Todas';
     totalEnServidor.value = 0;
     desdeCache.value = false;
     mensajeError.value = '';
